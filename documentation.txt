@@ -1,0 +1,86 @@
+ RAG (Retrieval-Augmented Generation) ?
+ Le RAG (Retrieval-Augmented Generation) est une technique qui combine :
+Recherche d’information + Intelligence artificielle (LLM)
+👉 Concrètement :
+1.	L’utilisateur pose une question en langage naturel
+2.	Le système cherche des données pertinentes dans une base (documents, incidents, etc.)
+3.	Il injecte ces données dans un prompt
+4.	Un modèle IA (LLM) génère une réponse basée sur ces données
+
+avantage du RAG :
+👉 Sans RAG :
+•	Tu dois faire des requêtes SQL complexes
+•	Tu ne peux pas poser de questions naturelles
+•	Tu dois connaître le schéma exact
+•	Tu n’as pas de synthèse intelligente
+👉 Avec RAG :
+Tu peux poser :
+“Quels incidents récurrents sur les pompes hydrauliques ?”
+Et obtenir :
+•	une synthèse
+•	les causes fréquentes
+•	les solutions utilisées
+•	les sources (IDs incidents)
+________________________________________
+🚀 Les avantages du RAG
+1. 🔍 Recherche intelligente
+•	comprend le sens (pas juste mots-clés)
+•	“perte de pression” ≈ “baisse pression”
+________________________________________
+2. 🧠 Réponses synthétiques
+Au lieu de lire 20 incidents :
+👉 le système te donne un résumé clair
+________________________________________
+3. 📚 Basé sur TES données
+Contrairement à un LLM classique :
+•	il ne répond PAS avec internet
+•	il répond avec ta base interne
+👉 donc :
+•	fiable
+•	traçable
+•	auditable
+
+Le RAG permet de connecter un modèle d’IA à une base de données interne.
+On récupère les données pertinentes, on les injecte dans le prompt, et le modèle génère une réponse basée uniquement sur ces données, avec des sources.
+
+📘 Jour 1 — Initialisation de la base de données (RAG Maintenance)
+Mettre en place la base de données PostgreSQL qui servira de fondation au système RAG.
+Choix techniques
+Base de données
+•	PostgreSQL
+Recherche
+•	Full-text search (tsvector) → pour mots clés exacts
+•	Vector search (pgvector) → pour similarité sémantique
+Extension vector (pgvector)
+
+📘 Jour 2 — Connexion .NET à PostgreSQL + API REST
+🎯 Objectif du Jour 2
+Connecter ton application .NET à la base PostgreSQL et exposer une API permettant d’accéder aux incidents.
+J’ai mis en place une API .NET connectée à une base PostgreSQL optimisée pour du RAG, avec un accès data via Dapper et une exposition REST testable via Swagger, ce qui constitue la base du pipeline retrieval.
+
+Jour 3 — Embeddings + Ollama + Indexation
+🎯 Objectif du Jour 3
+Transformer les incidents (texte) en vecteurs numériques (embeddings) pour permettre une recherche sémantique.
+🧠 Principe
+Un embedding = représentation numérique d’un texte.
+Exemple :
+"perte de pression pompe"
+→ [0.12, -0.45, 0.78, ...]
+Ces vecteurs permettent de comparer le sens des textes.
+2. Génération des embeddings avec Ollama
+•	Appel API :
+POST http://localhost:11434/api/embed
+•	Payload :
+{
+  "model": "all-minilm",
+  "input": "texte incident"
+}
+2. Génération des embeddings avec Ollama
+•	Appel API :
+POST http://localhost:11434/api/embed
+•	Payload :
+{
+  "model": "all-minilm",
+  "input": "texte incident"
+}
+pgvector est une extension de PostgreSQL qui permet de stocker et rechercher des vecteurs (embeddings).

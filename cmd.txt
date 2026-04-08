@@ -1,0 +1,31 @@
+﻿docker run -d --name pgvector -e POSTGRES_PASSWORD=postgres -p 5432:5432 ankane/pgvector
+docker run -d --name ollama -p 11434:11434 -v ollama_data:/root/.ollama ollama/ollama
+
+docker exec -it ollama ollama pull all-minilm
+all-minilm
+
+👉 Sert à :
+
+transformer texte → vecteur
+faire la recherche intelligente
+
+
+
+docker exec -it ollama ollama pull mistral
+C’est quoi Mistral ?
+
+👉 Mistral est un modèle de langage (LLM), comme :
+
+ChatGPT
+GPT-4
+LLaMA
+
+👉 Il sert à générer du texte intelligent :
+
+répondre à une question
+résumer
+expliquer
+analyser
+
+all-minilm → comprend le sens
+mistral → parle comme un humain

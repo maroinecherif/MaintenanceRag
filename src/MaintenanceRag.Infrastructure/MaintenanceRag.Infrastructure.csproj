@@ -8,11 +8,13 @@
 
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.72" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.5" />
     <PackageReference Include="Npgsql" Version="10.0.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\MaintenanceRag.Domain\MaintenanceRag.Domain.csproj" />
+    <ProjectReference Include="..\MaintenanceRag.Application\MaintenanceRag.Application.csproj" />
   </ItemGroup>
 
 </Project>

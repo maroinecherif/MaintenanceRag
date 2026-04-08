@@ -1,5 +1,7 @@
 <Solution>
   <Folder Name="/scripts/">
+    <File Path="cmd.txt" />
+    <File Path="documentation.txt" />
     <File Path="start.sql" />
   </Folder>
   <Folder Name="/src/">
