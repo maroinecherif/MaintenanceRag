@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MaintenanceRag.Api/MaintenanceRag.Api.csproj" />
+    <Project Path="src/MaintenanceRag.Application/MaintenanceRag.Application.csproj" />
+    <Project Path="src/MaintenanceRag.Domain/MaintenanceRag.Domain.csproj" />
+    <Project Path="src/MaintenanceRag.Infrastructure/MaintenanceRag.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MaintenanceRag.Tests/MaintenanceRag.Tests.csproj" />
+  </Folder>
+</Solution>
