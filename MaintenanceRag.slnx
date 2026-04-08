@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/scripts/">
+    <File Path="start.sql" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/MaintenanceRag.Api/MaintenanceRag.Api.csproj" />
     <Project Path="src/MaintenanceRag.Application/MaintenanceRag.Application.csproj" />
