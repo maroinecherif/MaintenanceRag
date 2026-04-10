@@ -1,0 +1,682 @@
+@page "/ask-ui"
+@model MaintenanceRag.Api.Pages.AskUiModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MaintenanceRag – Chat IA</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --primary:        #4f46e5;
+            --primary-h:      #4338ca;
+            --bg:             #f4f5f7;
+            --sidebar-bg:     #1e1e2e;
+            --sidebar-text:   #cdd6f4;
+            --sidebar-hover:  rgba(255,255,255,.07);
+            --sidebar-active: rgba(79,70,229,.35);
+            --sidebar-width:  260px;
+            --card:           #ffffff;
+            --border:         #e2e4e9;
+            --text:           #1a1a2e;
+            --muted:          #6b7280;
+            --radius:         12px;
+        }
+
+        html, body { height: 100%; }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* ── Sidebar ─────────────────────────────────────────── */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            flex-shrink: 0;
+        }
+
+        .sidebar-top {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+        }
+
+        .brand {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            opacity: .45;
+            margin-bottom: 0.75rem;
+        }
+
+        .btn-new {
+            width: 100%;
+            padding: 0.6rem 1rem;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font: inherit;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .15s;
+        }
+        .btn-new:hover { background: var(--primary-h); }
+
+        .sessions-label {
+            padding: 0.9rem 1rem 0.4rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            opacity: .4;
+        }
+
+        .sessions-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 0.5rem 1rem;
+        }
+
+        .session-item {
+            padding: 0.6rem 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.84rem;
+            color: var(--sidebar-text);
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+            margin-bottom: 0.2rem;
+            transition: background .12s;
+            overflow: hidden;
+        }
+        .session-item:hover  { background: var(--sidebar-hover); }
+        .session-item.active { background: var(--sidebar-active); }
+
+        .session-title {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-weight: 500;
+        }
+
+        .session-meta {
+            font-size: 0.71rem;
+            opacity: .45;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sessions-empty {
+            padding: 1rem 0.75rem;
+            font-size: 0.8rem;
+            opacity: .4;
+            font-style: italic;
+        }
+
+        /* ── Main ────────────────────────────────────────────── */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ── Welcome ─────────────────────────────────────────── */
+        .welcome {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-align: center;
+            padding: 2rem;
+            color: var(--muted);
+        }
+        .welcome h1 { font-size: 2rem; color: var(--text); margin-bottom: 0.2rem; }
+        .welcome p  { font-size: 0.95rem; }
+        .welcome .hint {
+            margin-top: 1.2rem;
+            font-size: 0.85rem;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.75rem 1.5rem;
+            line-height: 1.7;
+        }
+        .welcome .links { margin-top: 1rem; font-size: 0.82rem; }
+        .welcome .links a { color: var(--primary); text-decoration: none; margin: 0 0.5rem; }
+        .welcome .links a:hover { text-decoration: underline; }
+
+        /* ── Chat Window ─────────────────────────────────────── */
+        .chat-window {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 0.85rem 1.5rem;
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-shrink: 0;
+        }
+        .chat-header-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .equipment-badge {
+            font-size: 0.75rem;
+            background: #eef2ff;
+            color: var(--primary);
+            padding: 0.2rem 0.65rem;
+            border-radius: 999px;
+            border: 1px solid #c7d2fe;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        /* ── Message Bubbles ─────────────────────────────────── */
+        .msg-row {
+            display: flex;
+            gap: 0.75rem;
+            max-width: 780px;
+            width: 100%;
+        }
+        .msg-row.user      { align-self: flex-end;   flex-direction: row-reverse; }
+        .msg-row.assistant { align-self: flex-start; }
+
+        .msg-avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .msg-row.user      .msg-avatar { background: var(--primary); color: #fff; }
+        .msg-row.assistant .msg-avatar { background: #e0e7ff; }
+
+        .msg-body { display: flex; flex-direction: column; gap: 0.35rem; max-width: calc(100% - 44px); }
+
+        .msg-bubble {
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius);
+            line-height: 1.65;
+            font-size: 0.93rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .msg-row.user .msg-bubble {
+            background: var(--primary);
+            color: #fff;
+            border-bottom-right-radius: 3px;
+        }
+        .msg-row.assistant .msg-bubble {
+            background: var(--card);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 3px;
+            box-shadow: 0 1px 3px rgba(0,0,0,.05);
+        }
+
+        .msg-time {
+            font-size: 0.7rem;
+            color: var(--muted);
+            padding: 0 0.15rem;
+        }
+        .msg-row.user .msg-time { text-align: right; }
+
+        .msg-sources {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+            padding: 0 0.15rem;
+        }
+        .msg-sources span {
+            font-size: 0.7rem;
+            font-family: ui-monospace, monospace;
+            background: #f3f4f6;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+        }
+
+        /* ── Typing indicator ────────────────────────────────── */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 0.75rem 1rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            border-bottom-left-radius: 3px;
+            width: fit-content;
+        }
+        .typing-dot {
+            width: 7px; height: 7px;
+            background: var(--muted);
+            border-radius: 50%;
+            animation: tdBounce 1.2s ease-in-out infinite;
+        }
+        .typing-dot:nth-child(2) { animation-delay: .2s; }
+        .typing-dot:nth-child(3) { animation-delay: .4s; }
+        @@keyframes tdBounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30%            { transform: translateY(-6px); }
+        }
+
+        /* ── Input Area ──────────────────────────────────────── */
+        .input-area {
+            border-top: 1px solid var(--border);
+            background: var(--card);
+            padding: 0.75rem 1.5rem 1rem;
+            flex-shrink: 0;
+        }
+        .input-equipment-row { margin-bottom: 0.5rem; }
+        .input-equipment-row input {
+            width: 100%;
+            max-width: 320px;
+            padding: 0.35rem 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font: inherit;
+            font-size: 0.82rem;
+            background: #fafafa;
+            color: var(--muted);
+            transition: border-color .2s;
+        }
+        .input-equipment-row input:focus {
+            outline: none;
+            border-color: var(--primary);
+            color: var(--text);
+            background: #fff;
+        }
+        .input-row { display: flex; gap: 0.6rem; align-items: flex-end; }
+        .input-row textarea {
+            flex: 1;
+            padding: 0.7rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font: inherit;
+            font-size: 0.93rem;
+            resize: none;
+            min-height: 46px;
+            max-height: 180px;
+            overflow-y: auto;
+            background: #fafafa;
+            transition: border-color .2s;
+            line-height: 1.5;
+        }
+        .input-row textarea:focus { outline: none; border-color: var(--primary); background: #fff; }
+
+        .send-btn {
+            width: 42px; height: 42px;
+            border-radius: 10px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            transition: background .15s, opacity .15s;
+        }
+        .send-btn:hover:not(:disabled) { background: var(--primary-h); }
+        .send-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+        .input-hint { margin-top: 0.4rem; font-size: 0.72rem; color: var(--muted); }
+
+        /* ── Error Toast ─────────────────────────────────────── */
+        .error-toast {
+            display: none;
+            position: fixed;
+            bottom: 90px; left: 50%;
+            transform: translateX(-50%);
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            color: #c53030;
+            padding: 0.6rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,.1);
+            white-space: nowrap;
+        }
+        .error-toast.visible { display: block; }
+
+        /* ── Responsive ──────────────────────────────────────── */
+        @@media (max-width: 640px) {
+            .sidebar    { width: 200px; }
+            .messages   { padding: 1rem; }
+            .input-area { padding: 0.6rem 1rem 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── Sidebar ─────────────────────────────────────────────── -->
+<aside class="sidebar">
+    <div class="sidebar-top">
+        <span class="brand">Maintenance Rag</span>
+        <button class="btn-new" onclick="newSession()">＋ Nouvelle conversation</button>
+    </div>
+    <div class="sessions-label">Conversations</div>
+    <div class="sessions-list" id="sessionsList">
+        <div class="sessions-empty">Aucune conversation</div>
+    </div>
+</aside>
+
+<!-- ── Main ────────────────────────────────────────────────── -->
+<main class="chat-main">
+
+    <!-- Welcome state -->
+    <div class="welcome" id="welcome">
+        <h1>🔧 Maintenance Rag</h1>
+        <p>Assistant IA pour la maintenance industrielle</p>
+        <p style="font-size:0.82rem;">RAG + Ollama</p>
+        <div class="hint">
+            ← Cliquez sur <strong>Nouvelle conversation</strong> pour commencer<br/>
+            ou sélectionnez une conversation existante
+        </div>
+        <div class="links">
+            <a href="/swagger" target="_blank">API Swagger</a>
+            <a href="/incidents" target="_blank">Incidents JSON</a>
+        </div>
+    </div>
+
+    <!-- Chat window (hidden until a session is open) -->
+    <div class="chat-window" id="chatWindow" style="display:none">
+        <div class="chat-header">
+            <span class="chat-header-title" id="chatTitle">Nouvelle conversation</span>
+            <span class="equipment-badge" id="chatEquipment" style="display:none"></span>
+        </div>
+        <div class="messages" id="messages"></div>
+    </div>
+
+    <!-- Input area (hidden until a session is open) -->
+    <div class="input-area" id="inputArea" style="display:none">
+        <div class="input-equipment-row">
+            <input type="text" id="equipment" placeholder="🔩 Filtrer par équipement (optionnel)" />
+        </div>
+        <div class="input-row">
+            <textarea id="question" placeholder="Posez votre question…" rows="1"></textarea>
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Envoyer (Entrée)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="19" x2="12" y2="5"/>
+                    <polyline points="5 12 12 5 19 12"/>
+                </svg>
+            </button>
+        </div>
+        <div class="input-hint">Entrée pour envoyer · Maj+Entrée pour une nouvelle ligne</div>
+    </div>
+
+</main>
+
+<!-- Error toast -->
+<div class="error-toast" id="errorToast"></div>
+
+<script>
+    let currentSessionId = null;
+
+    // ── Formatage dates ────────────────────────────────────────
+    function formatSidebarDate(iso) {
+        const d   = new Date(iso);
+        const now = new Date();
+        if (now - d < 86400000)
+            return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+    }
+
+    function formatTime(iso) {
+        return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function escHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // ── Charger les sessions (sidebar) ────────────────────────
+    async function loadSessions() {
+        try {
+            const res = await fetch('/chat/sessions');
+            if (!res.ok) return;
+            renderSessions(await res.json());
+        } catch (e) {
+            console.error('Erreur chargement sessions:', e);
+        }
+    }
+
+    function renderSessions(sessions) {
+        const list = document.getElementById('sessionsList');
+        if (!sessions || sessions.length === 0) {
+            list.innerHTML = '<div class="sessions-empty">Aucune conversation</div>';
+            return;
+        }
+        list.innerHTML = sessions.map(s => `
+            <div class="session-item${s.id === currentSessionId ? ' active' : ''}"
+                 onclick="selectSession('${s.id}')" title="${escHtml(s.title)}">
+                <span class="session-title">${escHtml(s.title)}</span>
+                <span class="session-meta">${s.equipment ? escHtml(s.equipment) + ' · ' : ''}${formatSidebarDate(s.updatedAt)}</span>
+            </div>
+        `).join('');
+    }
+
+    // ── Créer une nouvelle session ────────────────────────────
+    async function newSession() {
+        try {
+            const res = await fetch('/chat/sessions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ equipment: null })
+            });
+            if (!res.ok) throw new Error('Impossible de créer la session');
+            const data = await res.json();
+            currentSessionId = data.id;
+            openChatUI('Nouvelle conversation', null);
+            document.getElementById('messages').innerHTML = '';
+            document.getElementById('equipment').value = '';
+            await loadSessions();
+            document.getElementById('question').focus();
+        } catch (e) {
+            showError(e.message);
+        }
+    }
+
+    // ── Ouvrir une session existante ──────────────────────────
+    async function selectSession(id) {
+        try {
+            const res = await fetch(`/chat/sessions/${id}`);
+            if (!res.ok) throw new Error('Session introuvable');
+            const session = await res.json();
+            currentSessionId = id;
+            openChatUI(session.title, session.equipment);
+            document.getElementById('equipment').value = session.equipment || '';
+            const msgs = document.getElementById('messages');
+            msgs.innerHTML = '';
+            (session.messages || []).forEach(m =>
+                appendMessage(m.role, m.content, m.sources, m.createdAt));
+            scrollToBottom();
+            await loadSessions();
+            document.getElementById('question').focus();
+        } catch (e) {
+            showError(e.message);
+        }
+    }
+
+    // ── Afficher l'interface de chat ──────────────────────────
+    function openChatUI(title, equipment) {
+        document.getElementById('welcome').style.display    = 'none';
+        document.getElementById('chatWindow').style.display = 'flex';
+        document.getElementById('inputArea').style.display  = 'block';
+        document.getElementById('chatTitle').textContent    = title;
+        const badge = document.getElementById('chatEquipment');
+        if (equipment) { badge.textContent = equipment; badge.style.display = 'inline-block'; }
+        else           { badge.style.display = 'none'; }
+    }
+
+    // ── Envoyer un message ────────────────────────────────────
+    async function sendMessage() {
+        if (!currentSessionId) return;
+        const question  = document.getElementById('question').value.trim();
+        const equipment = document.getElementById('equipment').value.trim() || null;
+        if (!question) return;
+
+        document.getElementById('question').value = '';
+        autoResizeTextarea();
+        setSending(true);
+        appendMessage('user', question, [], new Date().toISOString());
+        const typingId = appendTyping();
+        scrollToBottom();
+
+        try {
+            const res = await fetch(`/chat/sessions/${currentSessionId}/ask`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question, equipment })
+            });
+            removeTyping(typingId);
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ error: res.statusText }));
+                throw new Error(err.error || `Erreur HTTP ${res.status}`);
+            }
+
+            const data = await res.json();
+            appendMessage('assistant', data.answer, data.sources || [], new Date().toISOString());
+            scrollToBottom();
+
+            // Mettre à jour le titre affiché si c'est le premier message
+            const titleEl = document.getElementById('chatTitle');
+            if (titleEl.textContent === 'Nouvelle conversation') {
+                titleEl.textContent = question.length > 50 ? question.slice(0, 50) + '…' : question;
+            }
+
+            await loadSessions();
+        } catch (e) {
+            removeTyping(typingId);
+            showError(e.message || 'Erreur lors de l\'appel API');
+        } finally {
+            setSending(false);
+            document.getElementById('question').focus();
+        }
+    }
+
+    // ── Ajouter un message dans le DOM ────────────────────────
+    function appendMessage(role, content, sources, createdAt) {
+        const msgs = document.getElementById('messages');
+        const row  = document.createElement('div');
+        row.className = `msg-row ${role}`;
+
+        const avatar = role === 'user'
+            ? '<div class="msg-avatar">👤</div>'
+            : '<div class="msg-avatar">🤖</div>';
+
+        const sourcesHtml = (sources && sources.length > 0)
+            ? `<div class="msg-sources">${sources.map(s =>
+                `<span title="${escHtml(String(s))}">${String(s).slice(0, 8)}…</span>`).join('')}</div>`
+            : '';
+
+        row.innerHTML = `
+            ${avatar}
+            <div class="msg-body">
+                <div class="msg-bubble">${escHtml(content)}</div>
+                ${sourcesHtml}
+                <div class="msg-time">${formatTime(createdAt)}</div>
+            </div>`;
+        msgs.appendChild(row);
+    }
+
+    // ── Indicateur de frappe ──────────────────────────────────
+    function appendTyping() {
+        const msgs = document.getElementById('messages');
+        const row  = document.createElement('div');
+        const id   = 'typing-' + Date.now();
+        row.id        = id;
+        row.className = 'msg-row assistant';
+        row.innerHTML = `
+            <div class="msg-avatar">🤖</div>
+            <div class="msg-body">
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>`;
+        msgs.appendChild(row);
+        return id;
+    }
+
+    function removeTyping(id) { document.getElementById(id)?.remove(); }
+
+    function scrollToBottom() {
+        const msgs = document.getElementById('messages');
+        msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    function setSending(on) { document.getElementById('sendBtn').disabled = on; }
+
+    function showError(msg) {
+        const t = document.getElementById('errorToast');
+        t.textContent = '⚠ ' + msg;
+        t.classList.add('visible');
+        setTimeout(() => t.classList.remove('visible'), 4000);
+    }
+
+    // ── Auto-resize textarea ──────────────────────────────────
+    function autoResizeTextarea() {
+        const ta = document.getElementById('question');
+        ta.style.height = 'auto';
+        ta.style.height = Math.min(ta.scrollHeight, 180) + 'px';
+    }
+
+    document.getElementById('question').addEventListener('input', autoResizeTextarea);
+
+    document.getElementById('question').addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    });
+
+    // ── Init ──────────────────────────────────────────────────
+    loadSessions();
+</script>
+</body>
+</html>
