@@ -6,15 +6,6 @@ A fully local **Retrieval-Augmented Generation (RAG)** API built with **.NET 10*
 
 ---
 
-## 📸 Demo
-
-### Swagger UI
-![Swagger UI](docs/screenshots/swagger.png)
-
-### Ask UI (Razor Page)
-![Ask UI](docs/screenshots/ask-ui.png)
-
----
 
 ## ✨ Features
 
